@@ -1,11 +1,10 @@
-# chats/views.py
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import generics
-from celery.result import AsyncResult
-from rest_framework import status
+from rest_framework.response import Response # type: ignore
+from rest_framework.views import APIView # type: ignore
+from rest_framework import generics # type: ignore
+from celery.result import AsyncResult # type: ignore
+from rest_framework import status # type: ignore
 from .serializers import *
-from .main import main  
+from .chat import let_chat
 from .models import *
 
 
@@ -13,25 +12,19 @@ class ChatHistoryView(APIView):
     serializer_class = ChatHistorySerializer
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=request.data) 
 
         if serializer.is_valid():
             request_data = serializer.validated_data.get("request_data")
 
             # Start Celery task
-            task = main.delay(request_data)
+            user_id = request.user.id
+            task = let_chat.delay(request_data, user_id)
 
-            # Create chat history (empty response for now)
-            chat = ChatHistory.objects.create(
-                user=request.user,
-                request_data=request_data,
-                response_data={},  
-            )
 
             return Response(
                 {
                     "task_id": task.id,
-                    "chat_id": chat.id,
                     "message": "Task started. Use task_id to fetch results.",
                 },
                 status=status.HTTP_202_ACCEPTED,
@@ -50,11 +43,24 @@ class ChatResultView(APIView):
             if result.successful():
                 data = result.result
 
-                # Update chat history with response
-                chat = ChatHistory.objects.filter(user=request.user).last()
-                chat.flag = data.get("flag")
-                chat.response_data = data
-                chat.save()
+                if not isinstance(data, dict):
+                    return Response(
+                        {"status": "failed", "error": "Task returned no data."},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+
+                # Update chat history with response if we can locate it
+                chat_id = data.get("chat_id")
+                if chat_id:
+                    chat = ChatHistory.objects.filter(id=chat_id, user=request.user).first()
+                else:
+                    chat = ChatHistory.objects.filter(user=request.user).last()
+
+                if chat:
+                    chat.flag = data.get("flag") or chat.flag
+                    if "response" in data:
+                        chat.response_data = data.get("response")
+                    chat.save()
 
                 return Response({"status": "done", "result": data}, status=status.HTTP_200_OK)
             else:
