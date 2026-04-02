@@ -6,6 +6,7 @@ from service.views.purchased_list_views import PurchasedListDeleteView, Purchase
 from service.views.supershop_views import SuperShopMySQLView # type: ignore
 from .views.selected_supermarket_views import SelectedSupermarketDetailView, SelectedSupermarketListCreateView # type: ignore
 from service.views.product_details_views import ProductDetailsView  # type: ignore
+from service.views.notification_prod import NotificationProductListCreateView # type: ignore
 from .views.products_views import (
     ProductMySQLView,
     RefreshProductsCacheView,
@@ -64,4 +65,7 @@ urlpatterns = [
     # supermarket selection can be added here in future
     path('selected-supermarkets/', SelectedSupermarketListCreateView.as_view(), name='selected-supermarkets'),
     path('selected-supermarkets/<int:pk>/', SelectedSupermarketDetailView.as_view(), name='selected-supermarket-detail'),
+    
+    # notification products can be added here in future
+    path('notification-products/', NotificationProductListCreateView.as_view(), name='notification-products'),
 ]

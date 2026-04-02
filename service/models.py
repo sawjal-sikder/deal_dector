@@ -24,6 +24,14 @@ class Notification(models.Model):
         return f"Notification - {self.title}"
     
     
+class NotificationProduct(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product_id = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    
+    
 class Shopping(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product_id = models.IntegerField()

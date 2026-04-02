@@ -1,6 +1,7 @@
 from rest_framework.views import APIView  # type: ignore
 from rest_framework.response import Response  # type: ignore
 from rest_framework import permissions, status #type: ignore
+from service.utils.uniteprice import calculate_unit_price
 from service.views.products_views import get_all_products_cached  # type: ignore
 from service.utils.product_matching import product_matching_service
 from service.serializers.notification_product import get_supermarkets_cached
@@ -65,6 +66,7 @@ class ProductDetailsView(APIView):
             "supermarket_id": product.get("supermarket_id"),
             "price": product.get("price"),
             "price_per_unit": product.get("price_per_unit"),
+            "unit_price": calculate_unit_price(product.get("unit_amount"), product.get("price_per_unit")),
             "unit_amount": product.get("unit_amount"),
             "image_url": product.get("image_url"),
             "updated_at": product.get("updated_at"),
