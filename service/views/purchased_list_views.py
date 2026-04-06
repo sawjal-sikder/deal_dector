@@ -1,8 +1,8 @@
 from rest_framework import generics, permissions, response # type: ignore
 from rest_framework.views import APIView #type: ignore
 from rest_framework import status # type: ignore
-from service.models import Shopping # type: ignore
-from service.serializers.purchased_list_serializer import PurchasedListSerializer, BulkPurchaseSerializer # type: ignore
+from service.models import SaveToPuchase, Shopping # type: ignore
+from service.serializers.purchased_list_serializer import PurchasedListSerializer, BulkPurchaseSerializer, SaveToPuchaseSerializer # type: ignore
 from service.views.products_views import get_all_products_cached # type: ignore
 
 
@@ -86,3 +86,40 @@ class TotalPurchasePriceView(APIView):
                 total_price += product.get('price')
 
         return response.Response({'total_price': total_price})
+
+
+
+class SaveToPurchaseView(generics.ListCreateAPIView):
+    queryset = SaveToPuchase.objects.all()
+    serializer_class = SaveToPuchaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+    # Override create for custom response
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return response.Response({
+            "message": "Product saved to purchase list successfully",
+            "data": serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+    # total_save_amount
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        items = serializer.data
+
+        # Calculate total save_amount
+        total_save_amount = sum(item.get('save_amount', 0) or 0 for item in items)
+
+        return response.Response({
+            "items": items,
+            "total_save_amount": total_save_amount
+        })

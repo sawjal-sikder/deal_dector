@@ -66,7 +66,7 @@ class ProductDetailsView(APIView):
             "supermarket_id": product.get("supermarket_id"),
             "price": product.get("price"),
             "price_per_unit": product.get("price_per_unit"),
-            "unit_price": calculate_unit_price(product.get("unit_amount"), product.get("price_per_unit")),
+            # "unit_price": calculate_unit_price(product.get("unit_amount"), product.get("price")),
             "unit_amount": product.get("unit_amount"),
             "image_url": product.get("image_url"),
             "updated_at": product.get("updated_at"),

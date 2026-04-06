@@ -2,7 +2,7 @@ from django.urls import path # type: ignore
 
 from service.views.category_views import CategoryMySQLView
 from service.views.products_selected_supermarket_views import ProductsSelectedSupermarketViews
-from service.views.purchased_list_views import PurchasedListDeleteView, PurchasedListView, TotalPurchasePriceView
+from service.views.purchased_list_views import PurchasedListDeleteView, PurchasedListView, SaveToPurchaseView, TotalPurchasePriceView
 from service.views.supershop_views import SuperShopMySQLView # type: ignore
 from .views.selected_supermarket_views import SelectedSupermarketDetailView, SelectedSupermarketListCreateView # type: ignore
 from service.views.product_details_views import ProductDetailsView  # type: ignore
@@ -56,6 +56,9 @@ urlpatterns = [
     path('shopping/list/', ListShoppingView.as_view(), name='shopping-list'),
     path('shopping/', ShoppingListCreateView.as_view(), name='shopping-list-create'),
     path('shopping/<int:product_id>/', ShoppingDetailView.as_view(), name='shopping-detail'),
+    
+    # save to purchase can be added here in future
+    path('save-to-purchase/', SaveToPurchaseView.as_view(), name='save-to-purchase'),
     
     # purchased products
     path('purchased/', PurchasedListView.as_view(), name='purchased-list'),
